@@ -21,21 +21,8 @@ model account {
   updated_at   DateTime?   @updatedAt
 
   token        token[]
-  user         user?
-  admin        admin?
   user_subject user_subject[]
-}
-
-model user {
-  account_id Int      @id
-  created_at DateTime @default(now())
-  account    account? @relation(fields: [account_id], references: [id])
-}
-
-model admin {
-  account_id Int      @id
-  created_at DateTime @default(now())
-  account    account? @relation(fields: [account_id], references: [id])
+  device       device[]
 }
 
 model subject {
@@ -48,9 +35,10 @@ model subject {
 }
 
 model user_subject {
-  id         Int @id @default(autoincrement())
+  id         Int    @id @default(autoincrement())
   subject_id Int
   account_id Int
+  mark       Float?
 
   account account? @relation(fields: [account_id], references: [id])
   subject subject? @relation(fields: [subject_id], references: [id])
@@ -65,13 +53,36 @@ model token {
   account_id       Int
   related_token_id Int?
   related_token    token?    @relation("token", fields: [related_token_id], references: [id])
-  tokenType        tokenType
+  token_type       tokenType
   expiry_date      DateTime
   is_deleted       Boolean   @default(false)
   created_at       DateTime  @default(now())
   updated_at       DateTime? @updatedAt
 
   tokens token[] @relation("token")
+}
+
+model device {
+  id         Int       @id @default(autoincrement())
+  account    account?  @relation(fields: [account_id], references: [id])
+  account_id Int?
+  language   language  @default(en)
+  os         os        @default(browser)
+  ip         String?
+  is_deleted Boolean   @default(false)
+  created_at DateTime  @default(now())
+  updated_at DateTime? @default(now())
+}
+
+enum os {
+  ios
+  android
+  browser
+}
+
+enum language {
+  ar
+  en
 }
 
 enum accountType {
