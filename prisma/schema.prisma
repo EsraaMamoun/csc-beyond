@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model account {
+  id           Int         @id @default(autoincrement())
+  username     String
+  email        String
+  password     String
+  is_active    Boolean     @default(false)
+  account_type accountType @default(user)
+  created_at   DateTime    @default(now())
+  updated_at   DateTime?   @updatedAt
+
+  token        token[]
+  user         user?
+  admin        admin?
+  user_subject user_subject[]
+}
+
+model user {
+  account_id Int      @id
+  created_at DateTime @default(now())
+  account    account? @relation(fields: [account_id], references: [id])
+}
+
+model admin {
+  account_id Int      @id
+  created_at DateTime @default(now())
+  account    account? @relation(fields: [account_id], references: [id])
+}
+
+model subject {
+  id           Int            @id @default(autoincrement())
+  subject_name String
+  minimum_mark Float
+  created_at   DateTime       @default(now())
+  updated_at   DateTime?      @updatedAt
+  user_subject user_subject[]
+}
+
+model user_subject {
+  id         Int @id @default(autoincrement())
+  subject_id Int
+  account_id Int
+
+  account account? @relation(fields: [account_id], references: [id])
+  subject subject? @relation(fields: [subject_id], references: [id])
+
+  @@unique([subject_id, account_id])
+}
+
+model token {
+  id               Int       @id @default(autoincrement())
+  token_data       String?
+  account          account   @relation(fields: [account_id], references: [id])
+  account_id       Int
+  related_token_id Int?
+  related_token    token?    @relation("token", fields: [related_token_id], references: [id])
+  tokenType        tokenType
+  expiry_date      DateTime
+  is_deleted       Boolean   @default(false)
+  created_at       DateTime  @default(now())
+  updated_at       DateTime? @updatedAt
+
+  tokens token[] @relation("token")
+}
+
+enum accountType {
+  user
+  admin
+}
+
+enum tokenType {
+  access
+  refresh
+  otp
+  temporary_access
+}
