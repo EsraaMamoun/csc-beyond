@@ -16,6 +16,7 @@ model account {
   email        String
   password     String
   is_active    Boolean     @default(false)
+  is_deleted   Boolean     @default(false)
   account_type accountType @default(user)
   created_at   DateTime    @default(now())
   updated_at   DateTime?   @updatedAt
@@ -31,6 +32,7 @@ model subject {
   minimum_mark Float
   created_at   DateTime       @default(now())
   updated_at   DateTime?      @updatedAt
+  is_deleted   Boolean        @default(false)
   user_subject user_subject[]
 }
 
@@ -42,6 +44,10 @@ model user_subject {
 
   account account? @relation(fields: [account_id], references: [id])
   subject subject? @relation(fields: [subject_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime? @updatedAt
+  is_deleted Boolean   @default(false)
 
   @@unique([subject_id, account_id])
 }

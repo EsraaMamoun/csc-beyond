@@ -29,16 +29,8 @@ export class AccountService {
     createAccountInput: CreateAccountDto,
     prisma: Prisma.TransactionClient,
     // device_id: number,
-    create_admin = false,
   ) {
     try {
-      if (
-        !create_admin &&
-        createAccountInput.account_type === AccountTypeEnum.admin
-      ) {
-        throw new Error(ErrorsEnum.only_admin_can_create_an_admin);
-      }
-
       if (createAccountInput.email) {
         createAccountInput.email = createAccountInput.email.toLowerCase();
         const accountCheck = await prisma.account.findFirst({
@@ -87,7 +79,11 @@ export class AccountService {
   }
 
   async findAll(prisma: Prisma.TransactionClient) {
-    return prisma.account.findMany();
+    return prisma.account.findMany({
+      where: {
+        is_deleted: false,
+      },
+    });
   }
 
   async findOne(id: number, prisma: Prisma.TransactionClient) {
@@ -108,8 +104,9 @@ export class AccountService {
   }
 
   async remove(id: number, prisma: Prisma.TransactionClient) {
-    await prisma.account.delete({
+    await prisma.account.update({
       where: { id },
+      data: { is_deleted: true },
     });
 
     return true;

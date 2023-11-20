@@ -16,7 +16,9 @@ export class UserSubjectService {
   }
 
   async findAll(prisma: Prisma.TransactionClient) {
-    return prisma.user_subject.findMany();
+    return prisma.user_subject.findMany({
+      where: { is_deleted: false },
+    });
   }
 
   async findOne(id: number, prisma: Prisma.TransactionClient) {
@@ -37,8 +39,9 @@ export class UserSubjectService {
   }
 
   async remove(id: number, prisma: Prisma.TransactionClient) {
-    await prisma.user_subject.delete({
+    await prisma.user_subject.update({
       where: { id },
+      data: { is_deleted: true },
     });
 
     return true;
