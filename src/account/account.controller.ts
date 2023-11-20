@@ -12,8 +12,8 @@ import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { PrismaService } from 'src/prisma.service';
-import { AccountFilter } from './entities/account.entity';
-import { CurrentDevice } from 'src/decorators/device.decorator';
+// import { AccountFilter } from './entities/account.entity';
+// import { CurrentDevice } from 'src/decorators/device.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { TokenService } from 'src/token/token.service';
 import { CurrentToken } from 'src/decorators/token.decorator';
@@ -34,17 +34,14 @@ export class AccountController {
   @Post()
   create(
     @Body() createAccountDto: CreateAccountDto,
-    @CurrentDevice() device_id: string,
+    // @CurrentDevice() device_id: string,
   ) {
     try {
-      console.log('check 5');
-
-      console.log({ device_id }, createAccountDto);
       return this.prismaService.$transaction(async (prisma) => {
         return this.accountService.createAccount(
           createAccountDto,
           prisma,
-          +device_id,
+          // +device_id,
         );
       });
     } catch (error) {
@@ -99,18 +96,32 @@ export class AuthController {
 
   @ApiHeaders({ withAuth: false })
   @Post('login')
-  login(@Body() loginDto: LoginDto, @CurrentDevice() device_id: string) {
+  login(
+    @Body() loginDto: LoginDto,
+    // , @CurrentDevice() device_id: string
+  ) {
     return this.prismaService.$transaction(async (prisma) => {
-      return this.tokenService.login(loginDto, +device_id, prisma);
+      return this.tokenService.login(
+        loginDto,
+        // +device_id,
+        prisma,
+      );
     });
   }
 
   @ApiHeaders({ withAuth: true })
   @UseGuards(CustomAuthGuard)
   @Post('logout')
-  logout(@CurrentToken() token: string, @CurrentDevice() device_id: string) {
+  logout(
+    @CurrentToken() token: string,
+    // @CurrentDevice() device_id: string
+  ) {
     return this.prismaService.$transaction(async (prisma) => {
-      return this.tokenService.logout(token, prisma, device_id);
+      return this.tokenService.logout(
+        token,
+        prisma,
+        // device_id
+      );
     });
   }
 }

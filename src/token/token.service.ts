@@ -38,7 +38,7 @@ export class TokenService {
 
   async login(
     loginDto: LoginDto,
-    deviceId: number,
+    // deviceId: number,
     prisma: Prisma.TransactionClient,
   ) {
     try {
@@ -69,14 +69,14 @@ export class TokenService {
         prisma,
       );
 
-      await prisma.device.update({
-        where: {
-          id: deviceId,
-        },
-        data: {
-          account_id: account.id,
-        },
-      });
+      // await prisma.device.update({
+      //   where: {
+      //     id: deviceId,
+      //   },
+      //   data: {
+      //     account_id: account.id,
+      //   },
+      // });
 
       return {
         ...account,
@@ -362,7 +362,7 @@ export class TokenService {
   async logout(
     token: string,
     prisma: Prisma.TransactionClient,
-    device_id: string,
+    // device_id: string,
   ) {
     try {
       token = token.split(' ')[1];
@@ -378,10 +378,10 @@ export class TokenService {
         data: { expiry_date: dayjs().toDate(), is_deleted: true },
       });
 
-      await prisma.device.update({
-        where: { id: +device_id },
-        data: { account_id: null },
-      });
+      // await prisma.device.update({
+      //   where: { id: +device_id },
+      //   data: { account_id: null },
+      // });
 
       return true;
     } catch (error) {

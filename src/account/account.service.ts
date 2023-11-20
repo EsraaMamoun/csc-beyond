@@ -28,12 +28,10 @@ export class AccountService {
   async createAccount(
     createAccountInput: CreateAccountDto,
     prisma: Prisma.TransactionClient,
-    device_id: number,
+    // device_id: number,
     create_admin = false,
   ) {
     try {
-      console.log('herrrrrrrre');
-
       if (
         !create_admin &&
         createAccountInput.account_type === AccountTypeEnum.admin
@@ -76,10 +74,10 @@ export class AccountService {
           prisma,
         );
 
-      await prisma.device.update({
-        where: { id: device_id },
-        data: { account_id: account.id, updated_at: new Date() },
-      });
+      // await prisma.device.update({
+      //   where: { id: device_id },
+      //   data: { account_id: account.id, updated_at: new Date() },
+      // });
 
       return { ...account, tokens };
     } catch (error) {
