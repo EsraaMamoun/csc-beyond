@@ -21,6 +21,8 @@ import { CurrentToken } from 'src/decorators/token.decorator';
 import { ApiHeaders } from 'src/decorators/headers.decorator';
 import { CustomAuthGuard } from 'src/guards/auth.guard';
 import { LoginDto } from 'src/token/dto/login.dto';
+import { CurrentAccount } from 'src/decorators/account.decorator';
+import { Account } from './entities/account.entity';
 
 @Controller('account')
 @ApiTags('Account')
@@ -28,6 +30,7 @@ export class AccountController {
   constructor(
     private readonly accountService: AccountService,
     private readonly prismaService: PrismaService,
+    private readonly tokenService: TokenService,
   ) {}
 
   @ApiHeaders({ withAuth: false })
@@ -36,17 +39,13 @@ export class AccountController {
     @Body() createAccountDto: CreateAccountDto,
     // @CurrentDevice() device_id: string,
   ) {
-    try {
-      return this.prismaService.$transaction(async (prisma) => {
-        return this.accountService.createAccount(
-          createAccountDto,
-          prisma,
-          // +device_id,
-        );
-      });
-    } catch (error) {
-      console.log(error);
-    }
+    return this.prismaService.$transaction(async (prisma) => {
+      return this.accountService.createAccount(
+        createAccountDto,
+        prisma,
+        // +device_id,
+      );
+    });
   }
 
   @ApiHeaders({ withAuth: true })
@@ -78,11 +77,30 @@ export class AccountController {
 
   @ApiHeaders({ withAuth: true })
   @UseGuards(CustomAuthGuard)
+  @Patch('activate/:id')
+  activate(@Param('id') id: string) {
+    return this.prismaService.$transaction(async (prisma) => {
+      return this.accountService.activateAccount(+id, prisma);
+    });
+  }
+
+  @ApiHeaders({ withAuth: true })
+  @UseGuards(CustomAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: number) {
     return this.prismaService.$transaction(async (prisma) => {
       return this.accountService.remove(+id, prisma);
     });
+  }
+
+  @ApiHeaders({ withAuth: true })
+  @UseGuards(CustomAuthGuard)
+  @Post('current')
+  async current(@CurrentAccount() account: Account) {
+    return account;
+    // return this.prismaService.$transaction(async (prisma) => {
+    //   return this.tokenService.currentAccountToken(token, prisma);
+    // });
   }
 }
 

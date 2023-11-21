@@ -1,18 +1,22 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CreateUserSubjectDto } from './dto/create-user_subject.dto';
 import { UpdateUserSubjectDto } from './dto/update-user_subject.dto';
 import { Prisma } from '@prisma/client';
-import { UserSubjectFilter } from './entities/user_subject.entity';
 
 @Injectable()
 export class UserSubjectService {
-  create(
+  async create(
     createUserSubjectDto: CreateUserSubjectDto,
     prisma: Prisma.TransactionClient,
   ) {
-    return prisma.user_subject.create({
-      data: { ...createUserSubjectDto },
-    });
+    try {
+      return prisma.user_subject.create({
+        data: { ...createUserSubjectDto },
+      });
+    } catch (error) {
+      Logger.error(error);
+      throw new BadRequestException(error.message);
+    }
   }
 
   async findAll(prisma: Prisma.TransactionClient) {
@@ -45,5 +49,14 @@ export class UserSubjectService {
     });
 
     return true;
+  }
+
+  async userSubjectMarks(account_id: number, prisma: Prisma.TransactionClient) {
+    return prisma.user_subject.findMany({
+      where: { account_id },
+      include: {
+        subject: true,
+      },
+    });
   }
 }

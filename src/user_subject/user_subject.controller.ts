@@ -12,10 +12,11 @@ import { UserSubjectService } from './user_subject.service';
 import { CreateUserSubjectDto } from './dto/create-user_subject.dto';
 import { UpdateUserSubjectDto } from './dto/update-user_subject.dto';
 import { PrismaService } from 'src/prisma.service';
-import { UserSubjectFilter } from './entities/user_subject.entity';
 import { ApiTags } from '@nestjs/swagger';
 import { ApiHeaders } from 'src/decorators/headers.decorator';
 import { CustomAuthGuard } from 'src/guards/auth.guard';
+import { CurrentAccount } from 'src/decorators/account.decorator';
+import { Account } from 'src/account/entities/account.entity';
 
 @ApiHeaders({ withAuth: true })
 @UseGuards(CustomAuthGuard)
@@ -62,6 +63,13 @@ export class UserSubjectController {
   remove(@Param('id') id: string) {
     return this.prismaService.$transaction(async (prisma) => {
       return this.userSubjectService.remove(+id, prisma);
+    });
+  }
+
+  @Post('marks')
+  theUserSubjectMarks(@CurrentAccount() account: Account) {
+    return this.prismaService.$transaction(async (prisma) => {
+      return this.userSubjectService.userSubjectMarks(account.id, prisma);
     });
   }
 }

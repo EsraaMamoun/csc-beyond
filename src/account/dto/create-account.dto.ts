@@ -12,6 +12,9 @@ export class CreateAccountDto {
   password: string;
 
   @ApiProperty()
+  password_confirmation?: string;
+
+  @ApiProperty()
   is_active?: boolean;
 
   @ApiProperty()

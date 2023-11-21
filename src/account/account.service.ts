@@ -13,7 +13,6 @@ import { AccountTypeEnum } from 'src/enums/account_type.enum';
 import { ErrorsEnum } from 'src/enums/errors.enum';
 import { TokenService } from 'src/token/token.service';
 import { hash } from 'bcrypt';
-import { AccountFilter } from './entities/account.entity';
 
 @Injectable()
 export class AccountService {
@@ -26,7 +25,7 @@ export class AccountService {
     this.logger = new Logger('Account Service');
   }
   async createAccount(
-    createAccountInput: CreateAccountDto,
+    { password_confirmation, ...createAccountInput }: CreateAccountDto,
     prisma: Prisma.TransactionClient,
     // device_id: number,
   ) {
@@ -44,12 +43,49 @@ export class AccountService {
         }
       }
 
+      if (createAccountInput.username.length < 8) {
+        throw new Error(ErrorsEnum.username_must_be_at_least_8_characters_long);
+      }
+
       if (createAccountInput.password) {
-        createAccountInput.password = await hash(
-          createAccountInput.password,
-          10,
+        if (createAccountInput.password.length < 8) {
+          throw new Error(
+            ErrorsEnum.password_must_be_at_least_8_characters_long,
+          );
+        }
+
+        if (!/[A-Z]/.test(createAccountInput.password)) {
+          throw new Error(
+            ErrorsEnum.password_must_contain_at_least_one_uppercase_letter,
+          );
+        }
+
+        if (!/[a-z]/.test(createAccountInput.password)) {
+          throw new Error(
+            ErrorsEnum.password_must_contain_at_least_one_lowercase_letter,
+          );
+        }
+
+        if (!/\d/.test(createAccountInput.password)) {
+          throw new Error(ErrorsEnum.password_must_contain_at_least_one_digit);
+        }
+
+        if (
+          !/[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]/.test(createAccountInput.password)
+        ) {
+          throw new Error(
+            ErrorsEnum.password_must_contain_at_least_one_special_character,
+          );
+        }
+      }
+
+      if (createAccountInput.password !== password_confirmation) {
+        throw new Error(
+          ErrorsEnum.password_and_password_confirmation_do_not_match,
         );
       }
+
+      createAccountInput.password = await hash(createAccountInput.password, 10);
 
       const account = await prisma.account.create({
         data: {
@@ -74,22 +110,35 @@ export class AccountService {
       return { ...account, tokens };
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error.message);
     }
   }
 
   async findAll(prisma: Prisma.TransactionClient) {
-    return prisma.account.findMany({
-      where: {
-        is_deleted: false,
-      },
-    });
+    try {
+      return prisma.account.findMany({
+        where: {
+          is_deleted: false,
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
+      });
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException(error.message);
+    }
   }
 
   async findOne(id: number, prisma: Prisma.TransactionClient) {
-    return prisma.account.findFirst({
-      where: { id },
-    });
+    try {
+      return prisma.account.findFirst({
+        where: { id },
+      });
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException(error.message);
+    }
   }
 
   async update(
@@ -97,18 +146,44 @@ export class AccountService {
     updateAccountDto: UpdateAccountDto,
     prisma: Prisma.TransactionClient,
   ) {
-    return prisma.account.update({
-      where: { id },
-      data: { ...updateAccountDto },
-    });
+    try {
+      if (updateAccountDto.username && updateAccountDto.username.length < 8) {
+        throw new Error(ErrorsEnum.username_must_be_at_least_8_characters_long);
+      }
+
+      return prisma.account.update({
+        where: { id },
+        data: { ...updateAccountDto },
+      });
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async activateAccount(id: number, prisma: Prisma.TransactionClient) {
+    try {
+      return prisma.account.update({
+        where: { id },
+        data: { is_active: true },
+      });
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException(error.message);
+    }
   }
 
   async remove(id: number, prisma: Prisma.TransactionClient) {
-    await prisma.account.update({
-      where: { id },
-      data: { is_deleted: true },
-    });
+    try {
+      await prisma.account.update({
+        where: { id },
+        data: { is_deleted: true },
+      });
 
-    return true;
+      return true;
+    } catch (error) {
+      this.logger.error(error);
+      throw new BadRequestException(error.message);
+    }
   }
 }

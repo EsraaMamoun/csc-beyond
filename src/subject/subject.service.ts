@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
 import { Prisma } from '@prisma/client';
-import { SubjectFilter } from './entities/subject.entity';
 
 @Injectable()
 export class SubjectService {

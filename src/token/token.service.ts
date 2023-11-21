@@ -61,6 +61,10 @@ export class TokenService {
 
       if (!account) throw new Error(ErrorsEnum.account_not_found);
 
+      if (account.is_active === false) {
+        throw new Error(ErrorsEnum.account_is_inactive);
+      }
+
       const tokens = await this.generateAccessRefreshTokens(
         account.id,
         {
@@ -84,7 +88,7 @@ export class TokenService {
       };
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error.message);
     }
   }
 
@@ -98,7 +102,7 @@ export class TokenService {
       })) as Token;
     } catch (error) {
       this.logger.error(error);
-      throw new BadRequestException(error);
+      throw new BadRequestException(error.message);
     }
   }
 
@@ -387,6 +391,24 @@ export class TokenService {
     } catch (error) {
       this.logger.error(error);
       throw new BadRequestException(error);
+    }
+  }
+
+  async currentAccountToken(token: string, prisma: Prisma.TransactionClient) {
+    token = token.split(' ')[1];
+
+    try {
+      const decoded = this.jwtService.decode(token);
+      console.log('Decoded Token:', decoded);
+
+      return prisma.account.findFirst({
+        where: {
+          email: decoded.email,
+        },
+      });
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      throw new BadRequestException(error.message);
     }
   }
 }
