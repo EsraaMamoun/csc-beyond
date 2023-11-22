@@ -59,6 +59,18 @@ export class UserSubjectController {
     });
   }
 
+  @Post('set-mark')
+  updateUsingAccountSubjectIds(
+    @Body() updateUserSubjectDto: UpdateUserSubjectDto,
+  ) {
+    return this.prismaService.$transaction(async (prisma) => {
+      return this.userSubjectService.updateUsingAccountSubjectIds(
+        updateUserSubjectDto,
+        prisma,
+      );
+    });
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.prismaService.$transaction(async (prisma) => {
@@ -70,6 +82,13 @@ export class UserSubjectController {
   theUserSubjectMarks(@CurrentAccount() account: Account) {
     return this.prismaService.$transaction(async (prisma) => {
       return this.userSubjectService.userSubjectMarks(account.id, prisma);
+    });
+  }
+
+  @Get('marks/:account_id')
+  userSubjects(@Param('account_id') account_id: number) {
+    return this.prismaService.$transaction(async (prisma) => {
+      return this.userSubjectService.userSubjectMarks(+account_id, prisma);
     });
   }
 }

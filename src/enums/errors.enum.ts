@@ -13,4 +13,5 @@ export enum ErrorsEnum {
   password_and_password_confirmation_do_not_match = 'Password and password confirmation do not match',
   username_must_be_at_least_8_characters_long = 'Username must be at least 8 characters long',
   account_is_inactive = 'This account is inactive, please wait for the administrator to activate your account',
+  subject_already_assigned_to_the_user = 'Subject already assigned to the user',
 }

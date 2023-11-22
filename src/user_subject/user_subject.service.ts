@@ -2,6 +2,7 @@ import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { CreateUserSubjectDto } from './dto/create-user_subject.dto';
 import { UpdateUserSubjectDto } from './dto/update-user_subject.dto';
 import { Prisma } from '@prisma/client';
+import { ErrorsEnum } from 'src/enums/errors.enum';
 
 @Injectable()
 export class UserSubjectService {
@@ -10,6 +11,17 @@ export class UserSubjectService {
     prisma: Prisma.TransactionClient,
   ) {
     try {
+      const userSubject = await prisma.user_subject.findFirst({
+        where: {
+          account_id: createUserSubjectDto.account_id,
+          subject_id: createUserSubjectDto.subject_id,
+        },
+      });
+
+      if (!!userSubject) {
+        throw new Error(ErrorsEnum.subject_already_assigned_to_the_user);
+      }
+
       return prisma.user_subject.create({
         data: { ...createUserSubjectDto },
       });
@@ -33,12 +45,25 @@ export class UserSubjectService {
 
   async update(
     id: number,
-    updateAccountDto: UpdateUserSubjectDto,
+    updateUserSubjectDto: UpdateUserSubjectDto,
     prisma: Prisma.TransactionClient,
   ) {
     return prisma.user_subject.update({
       where: { id },
-      data: { ...updateAccountDto },
+      data: { ...updateUserSubjectDto },
+    });
+  }
+
+  async updateUsingAccountSubjectIds(
+    updateUserSubjectDto: UpdateUserSubjectDto,
+    prisma: Prisma.TransactionClient,
+  ) {
+    return prisma.user_subject.updateMany({
+      where: {
+        subject_id: updateUserSubjectDto.subject_id,
+        account_id: updateUserSubjectDto.account_id,
+      },
+      data: { mark: updateUserSubjectDto.mark },
     });
   }
 

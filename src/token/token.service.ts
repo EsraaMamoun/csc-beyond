@@ -399,7 +399,6 @@ export class TokenService {
 
     try {
       const decoded = this.jwtService.decode(token);
-      console.log('Decoded Token:', decoded);
 
       return prisma.account.findFirst({
         where: {
