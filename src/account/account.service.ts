@@ -119,6 +119,7 @@ export class AccountService {
       return prisma.account.findMany({
         where: {
           is_deleted: false,
+          account_type: AccountTypeEnum.user,
         },
         orderBy: {
           created_at: 'desc',
